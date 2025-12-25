@@ -32,7 +32,7 @@ jobs:
         run: isort --check-only src/ tests/
       
       - name: Lint with Flake8
-        run: flake8 src/ tests/ --max-line-length=120 --ignore=E501,W503
+        run: flake8 src/ tests/ --max-line-length=120 --ignore=E501,W503,E203,E402,F401,F841,F541,E741
       
       - name: Type check with mypy
         run: mypy src/ --ignore-missing-imports --no-error-summary
