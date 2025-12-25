@@ -137,8 +137,8 @@ class TestPrivacyAwarePromptEngine:
 
         assert data_summary in prompt
         assert "patterns" in prompt.lower()
-        assert "privacy" in prompt.lower()
         assert "anonymized" in prompt.lower()
+        assert "population-level" in prompt.lower() or "aggregate" in prompt.lower()
 
     def test_create_qa_prompt(self):
         """Test creating Q&A prompt."""

@@ -15,6 +15,7 @@ from differential_privacy import DifferentialPrivacyEngine
 from pii_detection import PIIDetector
 
 
+@pytest.mark.benchmark
 class TestPerformance:
     """Performance benchmark tests."""
 

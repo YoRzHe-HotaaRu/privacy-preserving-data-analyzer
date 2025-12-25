@@ -376,6 +376,6 @@ class TestErrorHandling:
         files = {"file": ("empty.csv", io.BytesIO(b""), "text/csv")}
 
         response = self.client.post("/api/v1/upload", files=files)
-        # May return 200 with empty data or error, depending on implementation
-        # Just ensure it doesn't crash
-        assert response.status_code in [200, 400, 422, 500]
+        # Empty file will cause pandas error - should return 500 or 400
+        # Just ensure it returns an error status, not 200
+        assert response.status_code in [400, 422, 500]
