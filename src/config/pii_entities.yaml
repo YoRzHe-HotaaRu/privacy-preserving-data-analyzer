@@ -1,0 +1,94 @@
+# PII Entity Definitions
+
+entities:
+  PERSON:
+    enabled: true
+    confidence_threshold: 0.85
+    anonymization: mask
+    description: Full names, first/last names
+
+  EMAIL_ADDRESS:
+    enabled: true
+    confidence_threshold: 0.90
+    anonymization: mask
+    description: Email addresses
+
+  PHONE_NUMBER:
+    enabled: true
+    confidence_threshold: 0.85
+    anonymization: mask
+    description: Phone numbers (international)
+
+  US_SSN:
+    enabled: true
+    confidence_threshold: 0.95
+    anonymization: suppression
+    description: US Social Security Numbers
+
+  CREDIT_CARD:
+    enabled: true
+    confidence_threshold: 0.95
+    anonymization: suppression
+    description: Credit/debit card numbers
+
+  IP_ADDRESS:
+    enabled: true
+    confidence_threshold: 0.90
+    anonymization: generalize
+    description: IPv4 and IPv6 addresses
+
+  DATE_TIME:
+    enabled: true
+    confidence_threshold: 0.85
+    anonymization: generalize
+    description: Dates and times
+
+  LOCATION:
+    enabled: true
+    confidence_threshold: 0.80
+    anonymization: generalize
+    description: Addresses, cities, countries
+
+  MEDICAL_ID:
+    enabled: true
+    confidence_threshold: 0.90
+    anonymization: suppression
+    pattern: "[A-Z]{2}\\d{6}"
+    description: Medical record numbers
+
+  EMPLOYEE_ID:
+    enabled: true
+    confidence_threshold: 0.90
+    anonymization: mask
+    pattern: "EMP\\d{5}"
+    description: Employee identification
+
+  PASSPORT:
+    enabled: true
+    confidence_threshold: 0.95
+    anonymization: suppression
+    description: Passport numbers
+
+  DRIVER_LICENSE:
+    enabled: true
+    confidence_threshold: 0.90
+    anonymization: mask
+    description: Driver's license numbers
+
+  BANK_ACCOUNT:
+    enabled: true
+    confidence_threshold: 0.95
+    anonymization: suppression
+    description: Bank account numbers
+
+  URL:
+    enabled: true
+    confidence_threshold: 0.85
+    anonymization: generalize
+    description: URLs and links
+
+  NRP:
+    enabled: true
+    confidence_threshold: 0.85
+    anonymization: mask
+    description: Nationality, religious or political groups

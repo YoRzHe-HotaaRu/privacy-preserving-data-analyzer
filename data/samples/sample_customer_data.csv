@@ -1,0 +1,21 @@
+id,name,email,phone,age,city,salary,department
+1,John Smith,john.smith@email.com,+1-555-123-4567,32,New York,75000,Engineering
+2,Jane Doe,jane.doe@company.org,+1-555-234-5678,28,San Francisco,82000,Marketing
+3,Robert Johnson,r.johnson@gmail.com,+1-555-345-6789,45,Los Angeles,95000,Finance
+4,Emily Williams,emily.w@outlook.com,+1-555-456-7890,35,Chicago,68000,HR
+5,Michael Brown,m.brown@yahoo.com,+1-555-567-8901,41,Houston,88000,Engineering
+6,Sarah Davis,sarah.davis@email.com,+1-555-678-9012,29,Phoenix,71000,Marketing
+7,David Miller,d.miller@company.org,+1-555-789-0123,52,Philadelphia,105000,Executive
+8,Jennifer Wilson,j.wilson@gmail.com,+1-555-890-1234,38,San Antonio,79000,Operations
+9,James Taylor,james.t@outlook.com,+1-555-901-2345,44,San Diego,92000,Engineering
+10,Elizabeth Anderson,e.anderson@yahoo.com,+1-555-012-3456,31,Dallas,73000,Finance
+11,Christopher Thomas,c.thomas@email.com,+1-555-123-4568,27,San Jose,85000,Engineering
+12,Patricia Jackson,p.jackson@company.org,+1-555-234-5679,49,Austin,78000,HR
+13,Daniel White,d.white@gmail.com,+1-555-345-6780,36,Jacksonville,67000,Operations
+14,Barbara Harris,b.harris@outlook.com,+1-555-456-7891,42,Fort Worth,91000,Finance
+15,Matthew Martin,m.martin@yahoo.com,+1-555-567-8902,33,Columbus,76000,Marketing
+16,Susan Thompson,s.thompson@email.com,+1-555-678-9013,47,Charlotte,84000,Executive
+17,Joseph Garcia,j.garcia@company.org,+1-555-789-0124,39,Indianapolis,72000,Engineering
+18,Margaret Martinez,m.martinez@gmail.com,+1-555-890-1235,26,Seattle,89000,Marketing
+19,Anthony Robinson,a.robinson@outlook.com,+1-555-901-2346,51,Denver,98000,Finance
+20,Dorothy Clark,d.clark@yahoo.com,+1-555-012-3457,34,Washington,81000,HR

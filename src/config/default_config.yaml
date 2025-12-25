@@ -1,0 +1,69 @@
+# Privacy Parameters
+privacy:
+  epsilon: 1.0
+  delta: 0.00001
+  k_anonymity: 5
+  l_diversity: 3
+  t_closeness: 0.2
+
+# Differential Privacy Mechanisms
+dp_mechanisms:
+  default: laplace
+  numerical: laplace
+  categorical: exponential
+  vector: gaussian
+
+# Anonymization Strategies by Entity Type
+anonymization:
+  PERSON: mask
+  EMAIL_ADDRESS: mask
+  PHONE_NUMBER: mask
+  US_SSN: suppression
+  CREDIT_CARD: suppression
+  IP_ADDRESS: generalize
+  DATE_OF_BIRTH: generalize
+  LOCATION: generalize
+  MEDICAL_ID: suppression
+  EMPLOYEE_ID: mask
+  PASSPORT: suppression
+  DRIVER_LICENSE: mask
+  BANK_ACCOUNT: suppression
+  URL: generalize
+  AGE: generalize
+
+# LLM Configuration
+llm:
+  provider: openrouter
+  model: bytedance-seed/seed-1.6-flash
+  base_url: https://openrouter.ai/api/v1
+  temperature: 0.3
+  max_tokens: 2000
+  safety_filters: true
+
+# Risk Assessment
+risk_assessment:
+  enabled: true
+  attack_models:
+    - marketer
+    - journalist
+    - prosecutor
+  compliance_standards:
+    - gdpr
+    - hipaa
+    - ccpa
+
+# Reporting
+reporting:
+  include_raw_data: false
+  include_anonymized_data: true
+  privacy_certificate: true
+  risk_disclosure: true
+  formats:
+    - html
+
+# Noise Levels for Perturbation
+perturbation:
+  low: 0.01
+  medium: 0.05
+  high: 0.10
+  default: 0.05

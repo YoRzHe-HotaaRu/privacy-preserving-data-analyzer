@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy-Preserving Data Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🔒</span>
+                <span class="logo-text">Privacy Analyzer</span>
+            </div>
+            <div class="header-actions">
+                <button id="themeToggle" class="btn btn-ghost">🌙</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Upload Section -->
+            <section class="card upload-section" id="uploadSection">
+                <h2>📤 Upload Dataset</h2>
+                <p class="text-muted">Upload CSV, JSON, or Excel files for privacy-preserving analysis</p>
+                
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">📁</div>
+                    <p>Drag & drop your file here or</p>
+                    <label class="btn btn-primary">
+                        Browse Files
+                        <input type="file" id="fileInput" accept=".csv,.json,.xlsx,.xls" hidden>
+                    </label>
+                    <p class="text-small text-muted">Supports: CSV, JSON, Excel</p>
+                </div>
+                
+                <div id="uploadProgress" class="upload-progress hidden">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="uploadStatus">Uploading...</p>
+                </div>
+            </section>
+
+            <!-- Data Preview Section -->
+            <section class="card hidden" id="previewSection">
+                <div class="section-header">
+                    <h2>📊 Data Preview</h2>
+                    <span class="badge" id="rowCount">0 rows</span>
+                </div>
+                
+                <div class="metrics-grid" id="dataMetrics"></div>
+                
+                <div class="table-container">
+                    <table id="previewTable">
+                        <thead id="previewHead"></thead>
+                        <tbody id="previewBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PII Detection Section -->
+            <section class="card hidden" id="piiSection">
+                <div class="section-header">
+                    <h2>🔍 PII Detection</h2>
+                    <span class="badge badge-warning" id="piiCount">0 PII found</span>
+                </div>
+                
+                <div class="pii-grid" id="piiGrid"></div>
+            </section>
+
+            <!-- Analysis Configuration -->
+            <section class="card hidden" id="configSection">
+                <h2>⚙️ Analysis Configuration</h2>
+                
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Privacy Budget (ε)</label>
+                        <input type="range" id="epsilonSlider" min="0.1" max="5" step="0.1" value="1.0">
+                        <span class="config-value" id="epsilonValue">1.0</span>
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Anonymization Strategy</label>
+                        <select id="strategySelect">
+                            <option value="mask">Masking (j***@email.com)</option>
+                            <option value="suppress">Suppression ([REDACTED])</option>
+                            <option value="generalize">Generalization (age → range)</option>
+                            <option value="hash">Hashing (one-way)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Quasi-Identifiers</label>
+                        <input type="text" id="quasiInput" placeholder="e.g., age, zipcode, gender">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label>Sensitive Attribute</label>
+                        <input type="text" id="sensitiveInput" placeholder="e.g., salary, diagnosis">
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary btn-large" id="analyzeBtn">
+                    🔒 Analyze with Privacy Protection
+                </button>
+            </section>
+
+            <!-- Results Section -->
+            <section class="card hidden" id="resultsSection">
+                <div class="section-header">
+                    <h2>📈 Analysis Results</h2>
+                    <button class="btn btn-ghost" id="downloadReportBtn">📥 Download Report</button>
+                </div>
+                
+                <!-- Privacy Metrics -->
+                <div class="results-subsection">
+                    <h3>🛡️ Privacy Metrics</h3>
+                    <div class="metrics-grid" id="privacyMetrics"></div>
+                </div>
+                
+                <!-- Privacy Budget -->
+                <div class="results-subsection">
+                    <h3>💰 Privacy Budget</h3>
+                    <div class="budget-display">
+                        <div class="budget-bar">
+                            <div class="budget-fill" id="budgetFill"></div>
+                        </div>
+                        <p id="budgetText">Budget: 0% used</p>
+                    </div>
+                </div>
+                
+                <!-- Risk Assessment -->
+                <div class="results-subsection">
+                    <h3>⚠️ Risk Assessment</h3>
+                    <div class="risk-display" id="riskDisplay"></div>
+                </div>
+                
+                <!-- Compliance -->
+                <div class="results-subsection">
+                    <h3>✅ Compliance Status</h3>
+                    <div class="compliance-grid" id="complianceGrid"></div>
+                </div>
+                
+                <!-- Anonymized Preview -->
+                <div class="results-subsection">
+                    <h3>🎭 Anonymized Data Preview</h3>
+                    <div class="table-container">
+                        <table id="anonTable">
+                            <thead id="anonHead"></thead>
+                            <tbody id="anonBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Privacy-Preserving Data Analyzer v1.0</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
