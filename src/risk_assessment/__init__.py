@@ -1,9 +1,9 @@
 """Risk Assessment Module"""
 
-from .risk_calculator import RiskCalculator
 from .compliance_checker import ComplianceChecker
+from .risk_calculator import RiskCalculator
 
 __all__ = [
-    'RiskCalculator',
-    'ComplianceChecker',
+    "RiskCalculator",
+    "ComplianceChecker",
 ]

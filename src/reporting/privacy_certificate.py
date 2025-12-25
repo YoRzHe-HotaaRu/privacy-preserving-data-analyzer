@@ -1,8 +1,8 @@
 """Reporting Module - Privacy Certificate Generator"""
 
-from datetime import datetime, timedelta
-from typing import Dict, Any
 import uuid
+from datetime import datetime, timedelta
+from typing import Any, Dict
 
 
 def generate_certificate_id() -> str:
@@ -12,32 +12,32 @@ def generate_certificate_id() -> str:
     return f"PC-{timestamp}-{unique_id}".upper()
 
 
-def generate_privacy_certificate(analysis_metadata: Dict[str, Any],
-                                privacy_metrics: Dict[str, Any],
-                                compliance_results: Dict[str, Any]) -> str:
+def generate_privacy_certificate(
+    analysis_metadata: Dict[str, Any], privacy_metrics: Dict[str, Any], compliance_results: Dict[str, Any]
+) -> str:
     """
     Generate detailed privacy certificate.
-    
+
     Args:
         analysis_metadata: Analysis metadata
         privacy_metrics: Privacy metrics
         compliance_results: Compliance results
-    
+
     Returns:
         Privacy certificate text
     """
     certificate_id = generate_certificate_id()
-    
+
     # Build anonymization methods list
-    anon_methods = privacy_metrics.get('anonymization_methods', ['masking', 'suppression'])
-    methods_str = '\n'.join([f'  • {method}' for method in anon_methods])
-    
+    anon_methods = privacy_metrics.get("anonymization_methods", ["masking", "suppression"])
+    methods_str = "\n".join([f"  • {method}" for method in anon_methods])
+
     # Build compliance scores
     compliance_str = ""
     for reg, data in compliance_results.items():
-        if isinstance(data, dict) and 'score' in data:
+        if isinstance(data, dict) and "score" in data:
             compliance_str += f"  • {reg.upper()}: {data['score']}/100 ({data.get('status', 'Unknown')})\n"
-    
+
     certificate = f"""
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                           PRIVACY CERTIFICATE                                 ║

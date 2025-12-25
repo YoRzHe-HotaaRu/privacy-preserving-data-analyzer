@@ -1,8 +1,8 @@
 """LLM Analysis Module - Privacy-Aware Prompt Engine"""
 
-from typing import Dict, Any
-import pandas as pd
+from typing import Any, Dict
 
+import pandas as pd
 
 PRIVACY_SYSTEM_PROMPT = """You are a specialized data analysis assistant with strict privacy constraints.
 
@@ -36,23 +36,22 @@ RESPONSE FORMAT:
 
 class PrivacyAwarePromptEngine:
     """Generate privacy-preserving prompts for LLM analysis."""
-    
+
     def __init__(self):
         self.system_prompt = PRIVACY_SYSTEM_PROMPT
-    
+
     def get_system_prompt(self) -> str:
         """Get the privacy system prompt."""
         return self.system_prompt
-    
-    def create_analysis_prompt(self, data_summary: str, 
-                               analysis_type: str = 'general') -> str:
+
+    def create_analysis_prompt(self, data_summary: str, analysis_type: str = "general") -> str:
         """
         Create a prompt for data analysis.
-        
+
         Args:
             data_summary: Summary statistics of the data
             analysis_type: Type of analysis (general, trends, correlations)
-        
+
         Returns:
             Formatted prompt
         """
@@ -79,15 +78,15 @@ IMPORTANT:
 
 Format your response with clear headings and bullet points."""
         return prompt
-    
+
     def create_qa_prompt(self, question: str, data_context: str) -> str:
         """
         Create a prompt for question answering.
-        
+
         Args:
             question: User's question
             data_context: Context about the data
-        
+
         Returns:
             Formatted prompt
         """
@@ -110,14 +109,14 @@ Your response should:
 4. Provide confidence in your answer
 5. Note any assumptions or limitations"""
         return prompt
-    
+
     def create_summary_prompt(self, df_summary: Dict[str, Any]) -> str:
         """
         Create a prompt for data summarization.
-        
+
         Args:
             df_summary: DataFrame summary statistics
-        
+
         Returns:
             Formatted prompt
         """
@@ -143,38 +142,38 @@ Please provide:
 
 Remember: Focus ONLY on aggregate statistics. Do NOT reference individual records."""
         return prompt
-    
+
     def format_dataframe_for_llm(self, df: pd.DataFrame, max_rows: int = 10) -> str:
         """
         Format DataFrame summary for LLM consumption.
-        
+
         Args:
             df: DataFrame to summarize
             max_rows: Maximum sample rows to include
-        
+
         Returns:
             Formatted string summary
         """
         summary = []
-        
+
         # Basic info
         summary.append(f"Dataset: {len(df)} rows × {len(df.columns)} columns")
         summary.append(f"\nColumns: {', '.join(df.columns.tolist())}")
-        
+
         # Data types
         summary.append("\nData Types:")
         for col, dtype in df.dtypes.items():
             summary.append(f"  - {col}: {dtype}")
-        
+
         # Numeric summary
-        numeric_cols = df.select_dtypes(include=['number']).columns
+        numeric_cols = df.select_dtypes(include=["number"]).columns
         if len(numeric_cols) > 0:
             summary.append("\nNumeric Column Statistics:")
             desc = df[numeric_cols].describe()
             summary.append(desc.to_string())
-        
+
         # Categorical summary
-        cat_cols = df.select_dtypes(include=['object', 'category']).columns
+        cat_cols = df.select_dtypes(include=["object", "category"]).columns
         if len(cat_cols) > 0:
             summary.append("\nCategorical Column Value Counts (top 5):")
             for col in cat_cols[:5]:  # Limit to first 5 categorical columns
@@ -182,7 +181,7 @@ Remember: Focus ONLY on aggregate statistics. Do NOT reference individual record
                 summary.append(f"\n  {col}:")
                 for val, count in counts.items():
                     summary.append(f"    - {val}: {count}")
-        
+
         # Missing values
         missing = df.isnull().sum()
         if missing.any():
@@ -190,5 +189,5 @@ Remember: Focus ONLY on aggregate statistics. Do NOT reference individual record
             for col, count in missing[missing > 0].items():
                 pct = count / len(df) * 100
                 summary.append(f"  - {col}: {count} ({pct:.1f}%)")
-        
+
         return "\n".join(summary)

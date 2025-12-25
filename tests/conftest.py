@@ -1,25 +1,28 @@
 """Pytest configuration and fixtures."""
 
-import pytest
-import pandas as pd
 import sys
 from pathlib import Path
 
+import pandas as pd
+import pytest
+
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
 @pytest.fixture
 def sample_dataframe():
     """Sample DataFrame with PII for testing."""
-    return pd.DataFrame({
-        'name': ['John Smith', 'Jane Doe', 'Bob Wilson'],
-        'email': ['john@email.com', 'jane@company.org', 'bob@test.com'],
-        'phone': ['+1-555-123-4567', '+1-555-234-5678', '+1-555-345-6789'],
-        'age': [32, 28, 45],
-        'salary': [75000, 82000, 95000],
-        'city': ['New York', 'San Francisco', 'Chicago']
-    })
+    return pd.DataFrame(
+        {
+            "name": ["John Smith", "Jane Doe", "Bob Wilson"],
+            "email": ["john@email.com", "jane@company.org", "bob@test.com"],
+            "phone": ["+1-555-123-4567", "+1-555-234-5678", "+1-555-345-6789"],
+            "age": [32, 28, 45],
+            "salary": [75000, 82000, 95000],
+            "city": ["New York", "San Francisco", "Chicago"],
+        }
+    )
 
 
 @pytest.fixture

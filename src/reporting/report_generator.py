@@ -1,12 +1,13 @@
 """Reporting Module - Report Generator"""
 
-from typing import Dict, Any, List
-from datetime import datetime
 import uuid
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List
 
 try:
     from jinja2 import Template
+
     JINJA2_AVAILABLE = True
 except ImportError:
     JINJA2_AVAILABLE = False
@@ -229,20 +230,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
 class ReportGenerator:
     """Generate privacy analysis reports."""
-    
+
     def __init__(self):
         self.template = HTML_TEMPLATE
-    
-    def generate_html_report(self, 
-                           data_summary: Dict[str, Any],
-                           pii_summary: Dict[str, Any],
-                           privacy_metrics: Dict[str, Any],
-                           risk_assessment: Dict[str, Any],
-                           compliance_results: Dict[str, Any],
-                           insights: str = None) -> str:
+
+    def generate_html_report(
+        self,
+        data_summary: Dict[str, Any],
+        pii_summary: Dict[str, Any],
+        privacy_metrics: Dict[str, Any],
+        risk_assessment: Dict[str, Any],
+        compliance_results: Dict[str, Any],
+        insights: str = None,
+    ) -> str:
         """
         Generate an HTML report.
-        
+
         Args:
             data_summary: Dataset summary
             pii_summary: PII detection summary
@@ -250,73 +253,68 @@ class ReportGenerator:
             risk_assessment: Risk assessment results
             compliance_results: Compliance check results
             insights: LLM-generated insights
-        
+
         Returns:
             HTML report string
         """
         report_id = f"RPT-{uuid.uuid4().hex[:8].upper()}"
         certificate_id = f"PC-{int(datetime.now().timestamp())}-{uuid.uuid4().hex[:8].upper()}"
-        
+
         # Determine risk styling
-        risk_level = risk_assessment.get('overall', {}).get('risk_level', 'Medium')
-        risk_value = risk_assessment.get('overall', {}).get('overall_risk', 0.5)
-        
+        risk_level = risk_assessment.get("overall", {}).get("risk_level", "Medium")
+        risk_value = risk_assessment.get("overall", {}).get("overall_risk", 0.5)
+
         risk_config = {
-            'Very Low': ('status-success', '#10b981', 10),
-            'Low': ('status-success', '#10b981', 25),
-            'Medium': ('status-warning', '#f59e0b', 50),
-            'High': ('status-danger', '#ef4444', 75),
-            'Very High': ('status-danger', '#ef4444', 95),
+            "Very Low": ("status-success", "#10b981", 10),
+            "Low": ("status-success", "#10b981", 25),
+            "Medium": ("status-warning", "#f59e0b", 50),
+            "High": ("status-danger", "#ef4444", 75),
+            "Very High": ("status-danger", "#ef4444", 95),
         }
-        
-        risk_class, risk_color, risk_pct = risk_config.get(risk_level, ('status-warning', '#f59e0b', 50))
-        
+
+        risk_class, risk_color, risk_pct = risk_config.get(risk_level, ("status-warning", "#f59e0b", 50))
+
         # Format compliance results
         compliance_list = []
         for reg, data in compliance_results.items():
             if isinstance(data, dict):
-                status = data.get('status', 'Unknown')
-                status_class = 'status-success' if status == 'Compliant' else 'status-warning' if 'Partial' in status else 'status-danger'
-                compliance_list.append({
-                    'name': reg.upper(),
-                    'score': data.get('score', 0),
-                    'status': status,
-                    'class': status_class
-                })
-        
+                status = data.get("status", "Unknown")
+                status_class = (
+                    "status-success"
+                    if status == "Compliant"
+                    else "status-warning" if "Partial" in status else "status-danger"
+                )
+                compliance_list.append(
+                    {"name": reg.upper(), "score": data.get("score", 0), "status": status, "class": status_class}
+                )
+
         # Get recommendations
-        recommendations = risk_assessment.get('overall', {}).get('recommendations', [])
-        
+        recommendations = risk_assessment.get("overall", {}).get("recommendations", [])
+
         # Build context
         context = {
-            'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'report_id': report_id,
-            'certificate_id': certificate_id,
-            'certificate_valid_until': (datetime.now().replace(year=datetime.now().year + 1)).strftime('%Y-%m-%d'),
-            'data_summary': {
-                'rows': data_summary.get('row_count', 0),
-                'columns': data_summary.get('column_count', 0)
+            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "report_id": report_id,
+            "certificate_id": certificate_id,
+            "certificate_valid_until": (datetime.now().replace(year=datetime.now().year + 1)).strftime("%Y-%m-%d"),
+            "data_summary": {"rows": data_summary.get("row_count", 0), "columns": data_summary.get("column_count", 0)},
+            "pii_summary": {"total": pii_summary.get("total_pii", 0), "types": len(pii_summary.get("by_type", {}))},
+            "privacy_metrics": {
+                "epsilon": privacy_metrics.get("epsilon", 1.0),
+                "delta": privacy_metrics.get("delta", 1e-5),
+                "k_anonymity": privacy_metrics.get("k_anonymity", "-"),
+                "l_diversity": privacy_metrics.get("l_diversity", "-"),
+                "budget_used": round(privacy_metrics.get("budget_utilization", 0) * 100, 1),
             },
-            'pii_summary': {
-                'total': pii_summary.get('total_pii', 0),
-                'types': len(pii_summary.get('by_type', {}))
-            },
-            'privacy_metrics': {
-                'epsilon': privacy_metrics.get('epsilon', 1.0),
-                'delta': privacy_metrics.get('delta', 1e-5),
-                'k_anonymity': privacy_metrics.get('k_anonymity', '-'),
-                'l_diversity': privacy_metrics.get('l_diversity', '-'),
-                'budget_used': round(privacy_metrics.get('budget_utilization', 0) * 100, 1)
-            },
-            'risk_level': risk_level,
-            'risk_class': risk_class,
-            'risk_color': risk_color,
-            'risk_percentage': risk_pct,
-            'recommendations': recommendations,
-            'compliance_results': compliance_list,
-            'insights': insights
+            "risk_level": risk_level,
+            "risk_class": risk_class,
+            "risk_color": risk_color,
+            "risk_percentage": risk_pct,
+            "recommendations": recommendations,
+            "compliance_results": compliance_list,
+            "insights": insights,
         }
-        
+
         # Render template
         if JINJA2_AVAILABLE:
             template = Template(self.template)
@@ -325,10 +323,10 @@ class ReportGenerator:
             # Simple string replacement fallback
             html = self.template
             for key, value in self._flatten_dict(context).items():
-                html = html.replace('{{ ' + key + ' }}', str(value))
+                html = html.replace("{{ " + key + " }}", str(value))
             return html
-    
-    def _flatten_dict(self, d: dict, parent_key: str = '', sep: str = '.') -> dict:
+
+    def _flatten_dict(self, d: dict, parent_key: str = "", sep: str = ".") -> dict:
         """Flatten nested dictionary."""
         items = []
         for k, v in d.items():
@@ -338,9 +336,9 @@ class ReportGenerator:
             else:
                 items.append((new_key, v))
         return dict(items)
-    
+
     def save_report(self, report_html: str, output_path: str):
         """Save report to file."""
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(report_html)
