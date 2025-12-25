@@ -1,47 +1,79 @@
 /**
- * Privacy-Preserving Data Analyzer - Main JavaScript
+ * ═══════════════════════════════════════════════════════════════════════════
+ * PRIV.GUARD - Privacy-Preserving Data Analyzer
+ * Main JavaScript Controller
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 
-// State
-let sessionId = null;
-let currentData = null;
+// ─────────────────────────────────────────────────────────────────────────────
+// State Management
+// ─────────────────────────────────────────────────────────────────────────────
+const state = {
+    sessionId: null,
+    currentData: null,
+    isAnalyzing: false
+};
 
+// ─────────────────────────────────────────────────────────────────────────────
 // DOM Elements
-const uploadZone = document.getElementById('uploadZone');
-const fileInput = document.getElementById('fileInput');
-const uploadProgress = document.getElementById('uploadProgress');
-const progressFill = document.getElementById('progressFill');
-const uploadStatus = document.getElementById('uploadStatus');
+// ─────────────────────────────────────────────────────────────────────────────
+const elements = {
+    // Upload
+    uploadZone: document.getElementById('uploadZone'),
+    fileInput: document.getElementById('fileInput'),
+    uploadProgress: document.getElementById('uploadProgress'),
+    progressFill: document.getElementById('progressFill'),
+    progressPercent: document.getElementById('progressPercent'),
+    uploadStatus: document.getElementById('uploadStatus'),
 
-const uploadSection = document.getElementById('uploadSection');
-const previewSection = document.getElementById('previewSection');
-const piiSection = document.getElementById('piiSection');
-const configSection = document.getElementById('configSection');
-const resultsSection = document.getElementById('resultsSection');
+    // Sections
+    uploadSection: document.getElementById('uploadSection'),
+    previewSection: document.getElementById('previewSection'),
+    piiSection: document.getElementById('piiSection'),
+    configSection: document.getElementById('configSection'),
+    resultsSection: document.getElementById('resultsSection'),
 
-const epsilonSlider = document.getElementById('epsilonSlider');
-const epsilonValue = document.getElementById('epsilonValue');
-const analyzeBtn = document.getElementById('analyzeBtn');
-const downloadReportBtn = document.getElementById('downloadReportBtn');
+    // Config
+    epsilonSlider: document.getElementById('epsilonSlider'),
+    epsilonValue: document.getElementById('epsilonValue'),
+    sliderFill: document.getElementById('sliderFill'),
+    strategySelect: document.getElementById('strategySelect'),
+    quasiInput: document.getElementById('quasiInput'),
+    sensitiveInput: document.getElementById('sensitiveInput'),
 
-// Event Listeners
+    // Actions
+    analyzeBtn: document.getElementById('analyzeBtn'),
+    downloadReportBtn: document.getElementById('downloadReportBtn'),
+    themeToggle: document.getElementById('themeToggle')
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Initialization
+// ─────────────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
+    console.log('🔒 PRIV.GUARD initialized');
     setupUploadHandlers();
     setupConfigHandlers();
     setupAnalysisHandlers();
+    setupAnimations();
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Upload Handlers
+// ─────────────────────────────────────────────────────────────────────────────
 function setupUploadHandlers() {
+    const { uploadZone, fileInput } = elements;
+
     // Drag and drop
     uploadZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadZone.classList.add('dragover');
     });
 
-    uploadZone.addEventListener('dragleave', () => {
+    uploadZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
         uploadZone.classList.remove('dragover');
     });
 
@@ -54,7 +86,7 @@ function setupUploadHandlers() {
         }
     });
 
-    // File input
+    // Click to upload
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             handleFileUpload(e.target.files[0]);
@@ -63,19 +95,18 @@ function setupUploadHandlers() {
 }
 
 async function handleFileUpload(file) {
-    // Validate
+    // Validate file type
     const allowedTypes = ['.csv', '.json', '.xlsx', '.xls'];
     const ext = '.' + file.name.split('.').pop().toLowerCase();
 
     if (!allowedTypes.includes(ext)) {
-        alert('Please upload a CSV, JSON, or Excel file.');
+        showNotification('Please upload a CSV, JSON, or Excel file.', 'error');
         return;
     }
 
     // Show progress
-    uploadProgress.classList.remove('hidden');
-    progressFill.style.width = '0%';
-    uploadStatus.textContent = 'Uploading...';
+    elements.uploadProgress.classList.remove('hidden');
+    updateProgress(0, 'Initializing upload...');
 
     // Create form data
     const formData = new FormData();
@@ -85,9 +116,9 @@ async function handleFileUpload(file) {
         // Animate progress
         let progress = 0;
         const progressInterval = setInterval(() => {
-            progress = Math.min(progress + 10, 90);
-            progressFill.style.width = progress + '%';
-        }, 100);
+            progress = Math.min(progress + Math.random() * 15, 90);
+            updateProgress(progress, 'Uploading file...');
+        }, 200);
 
         // Upload
         const response = await fetch('/api/v1/upload', {
@@ -96,58 +127,66 @@ async function handleFileUpload(file) {
         });
 
         clearInterval(progressInterval);
-        progressFill.style.width = '100%';
 
         if (!response.ok) {
             throw new Error('Upload failed');
         }
 
         const data = await response.json();
-        sessionId = data.session_id;
-        currentData = data;
+        state.sessionId = data.session_id;
+        state.currentData = data;
 
-        uploadStatus.textContent = 'Upload complete!';
+        updateProgress(100, 'Processing complete!');
 
-        // Show sections
+        // Show sections with staggered animation
         setTimeout(() => {
             displayDataPreview(data);
             displayPIIResults(data);
-            showSection(previewSection);
-            showSection(piiSection);
-            showSection(configSection);
+            showSection(elements.previewSection, 0);
+            showSection(elements.piiSection, 100);
+            showSection(elements.configSection, 200);
         }, 500);
 
     } catch (error) {
         console.error('Upload error:', error);
-        uploadStatus.textContent = 'Upload failed. Please try again.';
-        progressFill.style.width = '0%';
+        updateProgress(0, 'Upload failed. Please try again.');
+        showNotification('Upload failed. Please try again.', 'error');
     }
 }
 
+function updateProgress(percent, status) {
+    elements.progressFill.style.width = percent + '%';
+    elements.progressPercent.textContent = Math.round(percent) + '%';
+    elements.uploadStatus.textContent = status;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Data Preview
+// ─────────────────────────────────────────────────────────────────────────────
 function displayDataPreview(data) {
     const { data_summary } = data;
 
     // Row count badge
-    document.getElementById('rowCount').textContent = `${data_summary.row_count} rows`;
+    document.getElementById('rowCount').textContent = `${data_summary.row_count} RECORDS`;
 
-    // Metrics
-    const metricsGrid = document.getElementById('dataMetrics');
-    metricsGrid.innerHTML = `
-        <div class="metric-card">
-            <div class="metric-value">${data_summary.row_count}</div>
-            <div class="metric-label">Records</div>
+    // Stats grid
+    const statsGrid = document.getElementById('dataMetrics');
+    statsGrid.innerHTML = `
+        <div class="stat-card">
+            <div class="stat-value">${formatNumber(data_summary.row_count)}</div>
+            <div class="stat-label">Records</div>
         </div>
-        <div class="metric-card">
-            <div class="metric-value">${data_summary.column_count}</div>
-            <div class="metric-label">Columns</div>
+        <div class="stat-card">
+            <div class="stat-value">${data_summary.column_count}</div>
+            <div class="stat-label">Columns</div>
         </div>
-        <div class="metric-card">
-            <div class="metric-value">${data.pii_count}</div>
-            <div class="metric-label">PII Detected</div>
+        <div class="stat-card">
+            <div class="stat-value">${data.pii_count}</div>
+            <div class="stat-label">PII Found</div>
         </div>
-        <div class="metric-card">
-            <div class="metric-value">${data.columns_with_pii.length}</div>
-            <div class="metric-label">Columns with PII</div>
+        <div class="stat-card">
+            <div class="stat-value">${data.columns_with_pii.length}</div>
+            <div class="stat-label">At Risk</div>
         </div>
     `;
 
@@ -164,58 +203,90 @@ function displayDataPreview(data) {
             `<td>${escapeHtml(String(row[col] ?? ''))}</td>`
         ).join('') + '</tr>'
     ).join('');
+
+    // Update input placeholders with actual column names
+    const nonPiiColumns = data_summary.columns.filter(col => !data.columns_with_pii.includes(col));
+    const quasiExample = nonPiiColumns.filter(c => !['id'].includes(c.toLowerCase())).slice(0, 3).join(', ');
+    const sensitiveExample = nonPiiColumns.find(c => ['salary', 'income', 'amount', 'price'].some(s => c.toLowerCase().includes(s))) || nonPiiColumns[nonPiiColumns.length - 1] || '';
+
+    if (elements.quasiInput) {
+        elements.quasiInput.placeholder = quasiExample || 'e.g., age, city, department';
+    }
+    if (elements.sensitiveInput) {
+        elements.sensitiveInput.placeholder = sensitiveExample || 'e.g., salary, diagnosis';
+    }
 }
 
 function displayPIIResults(data) {
     const { pii_detected } = data;
     const piiGrid = document.getElementById('piiGrid');
 
-    document.getElementById('piiCount').textContent = `${data.pii_count} PII found`;
+    document.getElementById('piiCount').textContent = `${data.pii_count} THREATS`;
 
     if (Object.keys(pii_detected).length === 0) {
-        piiGrid.innerHTML = '<p class="text-muted">No PII detected</p>';
+        piiGrid.innerHTML = '<p class="text-muted" style="text-align: center; padding: 2rem;">No PII detected in dataset</p>';
         return;
     }
 
     piiGrid.innerHTML = Object.entries(pii_detected).map(([col, info]) => `
         <div class="pii-item">
             <div class="pii-type">${escapeHtml(col)}</div>
-            <div class="text-small text-muted">
-                ${info.count} instances<br>
-                Types: ${info.types.join(', ')}
+            <div class="pii-details">
+                <div>${info.count} instances detected</div>
+                <div style="margin-top: 0.5rem; opacity: 0.7;">Types: ${info.types.join(', ')}</div>
             </div>
         </div>
     `).join('');
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Config Handlers
+// ─────────────────────────────────────────────────────────────────────────────
 function setupConfigHandlers() {
-    epsilonSlider.addEventListener('input', (e) => {
-        epsilonValue.textContent = e.target.value;
-    });
+    const { epsilonSlider, epsilonValue, sliderFill } = elements;
+
+    const updateSlider = () => {
+        const value = epsilonSlider.value;
+        const percent = ((value - 0.1) / (5 - 0.1)) * 100;
+        epsilonValue.textContent = value;
+        sliderFill.style.width = percent + '%';
+    };
+
+    epsilonSlider.addEventListener('input', updateSlider);
+    updateSlider(); // Initial state
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Analysis Handlers
+// ─────────────────────────────────────────────────────────────────────────────
 function setupAnalysisHandlers() {
-    analyzeBtn.addEventListener('click', runAnalysis);
-    downloadReportBtn.addEventListener('click', downloadReport);
+    elements.analyzeBtn.addEventListener('click', runAnalysis);
+    elements.downloadReportBtn.addEventListener('click', downloadReport);
 }
 
 async function runAnalysis() {
-    if (!sessionId) {
-        alert('Please upload data first');
+    if (!state.sessionId) {
+        showNotification('Please upload data first', 'warning');
         return;
     }
 
-    analyzeBtn.disabled = true;
-    analyzeBtn.textContent = '🔄 Analyzing...';
+    if (state.isAnalyzing) return;
+    state.isAnalyzing = true;
+
+    const btn = elements.analyzeBtn;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `
+        <span class="btn-icon" style="animation: pulse 1s infinite;">◉</span>
+        <span class="btn-text">ANALYZING...</span>
+    `;
+    btn.disabled = true;
 
     const params = new URLSearchParams({
-        session_id: sessionId,
-        epsilon: epsilonSlider.value,
-        anonymization_strategy: document.getElementById('strategySelect').value,
-        quasi_identifiers: document.getElementById('quasiInput').value,
-        sensitive_attribute: document.getElementById('sensitiveInput').value
+        session_id: state.sessionId,
+        epsilon: elements.epsilonSlider.value,
+        anonymization_strategy: elements.strategySelect.value,
+        quasi_identifiers: elements.quasiInput.value,
+        sensitive_attribute: elements.sensitiveInput.value
     });
 
     try {
@@ -227,14 +298,18 @@ async function runAnalysis() {
 
         const results = await response.json();
         displayResults(results);
-        showSection(resultsSection);
+        showSection(elements.resultsSection, 0);
+
+        // Scroll to results
+        elements.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     } catch (error) {
         console.error('Analysis error:', error);
-        alert('Analysis failed. Please try again.');
+        showNotification('Analysis failed. Please try again.', 'error');
     } finally {
-        analyzeBtn.disabled = false;
-        analyzeBtn.textContent = '🔒 Analyze with Privacy Protection';
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        state.isAnalyzing = false;
     }
 }
 
@@ -263,15 +338,18 @@ function displayResults(results) {
     // Budget
     const budgetUsed = (privacy_metrics.budget_used / privacy_metrics.epsilon * 100) || 0;
     document.getElementById('budgetFill').style.width = budgetUsed + '%';
+    document.getElementById('budgetPercent').textContent = budgetUsed.toFixed(1) + '%';
     document.getElementById('budgetText').textContent =
-        `Budget: ${budgetUsed.toFixed(1)}% used (${privacy_metrics.budget_used}/${privacy_metrics.epsilon})`;
+        `${privacy_metrics.budget_used.toFixed(3)} / ${privacy_metrics.epsilon} epsilon consumed`;
 
     // Risk Assessment
     const risk = results.risk_assessment?.overall || {};
+    const riskLevel = risk.risk_level || 'Unknown';
+    const riskClass = riskLevel.toLowerCase();
     document.getElementById('riskDisplay').innerHTML = `
-        <div class="metric-card">
-            <div class="metric-value">${risk.risk_level || 'N/A'}</div>
-            <div class="metric-label">Risk Level</div>
+        <div class="risk-card">
+            <div class="risk-level ${riskClass}">${riskLevel.toUpperCase()}</div>
+            <div class="metric-label">Re-identification Risk</div>
         </div>
     `;
 
@@ -284,10 +362,12 @@ function displayResults(results) {
             if (typeof data !== 'object') return '';
             const statusClass = data.status === 'Compliant' ? 'badge-success' :
                 data.status?.includes('Partial') ? 'badge-warning' : 'badge-danger';
+            const scoreColor = data.score >= 80 ? 'var(--success)' :
+                data.score >= 60 ? 'var(--warning)' : 'var(--danger)';
             return `
                 <div class="compliance-item">
                     <div class="compliance-name">${reg.toUpperCase()}</div>
-                    <div class="compliance-score">${data.score}/100</div>
+                    <div class="compliance-score" style="color: ${scoreColor}">${data.score}/100</div>
                     <span class="badge ${statusClass}">${data.status}</span>
                 </div>
             `;
@@ -305,22 +385,122 @@ function displayResults(results) {
 }
 
 async function downloadReport() {
-    if (!sessionId) return;
+    if (!state.sessionId) return;
 
     try {
-        window.open(`/api/v1/generate-report?session_id=${sessionId}`, '_blank');
+        window.open(`/api/v1/generate-report?session_id=${state.sessionId}`, '_blank');
     } catch (error) {
         console.error('Report generation error:', error);
+        showNotification('Failed to generate report', 'error');
     }
 }
 
-// Utilities
-function showSection(section) {
-    section.classList.remove('hidden');
+// ─────────────────────────────────────────────────────────────────────────────
+// Animations & Effects
+// ─────────────────────────────────────────────────────────────────────────────
+function setupAnimations() {
+    // Staggered title animation
+    const titleLines = document.querySelectorAll('.title-line');
+    titleLines.forEach((line, index) => {
+        line.style.opacity = '0';
+        line.style.transform = 'translateY(30px)';
+        setTimeout(() => {
+            line.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            line.style.opacity = '1';
+            line.style.transform = 'translateY(0)';
+        }, 200 + index * 150);
+    });
+
+    // Hero description fade in
+    const heroDesc = document.querySelector('.hero-description');
+    if (heroDesc) {
+        heroDesc.style.opacity = '0';
+        setTimeout(() => {
+            heroDesc.style.transition = 'opacity 0.8s ease';
+            heroDesc.style.opacity = '1';
+        }, 600);
+    }
+
+    // Upload zone fade in
+    const uploadZone = document.querySelector('.upload-zone');
+    if (uploadZone) {
+        uploadZone.style.opacity = '0';
+        uploadZone.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            uploadZone.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            uploadZone.style.opacity = '1';
+            uploadZone.style.transform = 'translateY(0)';
+        }, 400);
+    }
 }
 
+function showSection(section, delay = 0) {
+    setTimeout(() => {
+        section.classList.remove('hidden');
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(20px)';
+        requestAnimationFrame(() => {
+            section.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            section.style.opacity = '1';
+            section.style.transform = 'translateY(0)';
+        });
+    }, delay);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────────────────────
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
+
+function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 24px;
+        background: ${type === 'error' ? 'rgba(255, 51, 102, 0.9)' :
+            type === 'warning' ? 'rgba(255, 184, 0, 0.9)' :
+                'rgba(0, 240, 255, 0.9)'};
+        color: ${type === 'error' || type === 'warning' ? '#000' : '#fff'};
+        border-radius: 8px;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    `;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);

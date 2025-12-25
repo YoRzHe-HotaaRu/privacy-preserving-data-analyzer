@@ -202,7 +202,7 @@ async def get_privacy_budget():
     return dp_engine.get_budget_report()
 
 
-@app.post("/api/v1/generate-report")
+@app.get("/api/v1/generate-report")
 async def generate_report(session_id: str):
     """Generate HTML privacy report."""
     if session_id not in session_data:
