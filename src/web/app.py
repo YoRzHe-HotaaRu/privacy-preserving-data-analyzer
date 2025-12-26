@@ -162,13 +162,40 @@ async def analyze_data(
     qi_list = [q.strip() for q in quasi_identifiers.split(",")] if quasi_identifiers else []
     qi_list = [q for q in qi_list if q in df.columns]
 
-    # Anonymize data
+    # Anonymize data with selected strategy
     pii_columns = {col: info["types"][0] for col, info in pii_results.items() if info["types"]}
-    anonymized_df = anonymizer.anonymize_dataframe(df, pii_columns)
+    
+    # Apply the user-selected strategy to all PII columns
+    anonymized_df = df.copy()
+    for column, entity_type in pii_columns.items():
+        if column in anonymized_df.columns:
+            anonymized_df[column] = anonymized_df[column].apply(
+                lambda x: anonymizer.apply_strategy(str(x), entity_type, anonymization_strategy) if pd.notna(x) else x
+            )
 
     # Calculate privacy metrics
     dp_engine.reset_budget()
     dp_engine.epsilon = epsilon
+
+    # Perform differential privacy statistics on numeric columns (consumes budget)
+    dp_stats = {}
+    numeric_columns = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
+    
+    # Calculate DP statistics for a few numeric columns (uses budget)
+    for col in numeric_columns[:3]:  # Limit to 3 columns to conserve budget
+        try:
+            col_data = df[col].dropna().values
+            if len(col_data) > 0:
+                # Use 10% of budget per statistic
+                stat_epsilon = epsilon * 0.1
+                dp_count = dp_engine.private_count(col_data, epsilon=stat_epsilon)
+                dp_mean = dp_engine.private_mean(col_data, lower_bound=float(col_data.min()), upper_bound=float(col_data.max()), epsilon=stat_epsilon)
+                dp_stats[col] = {
+                    "private_count": dp_count,
+                    "private_mean": round(dp_mean, 2)
+                }
+        except Exception:
+            pass  # Skip columns that fail
 
     privacy_report = dp_engine.get_budget_report()
 
@@ -181,7 +208,8 @@ async def analyze_data(
     pii_summary = {"total_pii": sum(r["count"] for r in pii_results.values()), "by_type": pii_results}
     compliance = compliance_checker.check_all(risk_results, pii_summary, True)
 
-    return {
+    # Store analysis results in session for report generation
+    analysis_results = {
         "anonymized_preview": anonymized_df.head(10).to_dict(orient="records"),
         "anonymized_columns": list(pii_columns.keys()),
         "privacy_metrics": {
@@ -191,9 +219,17 @@ async def analyze_data(
             "k_anonymity": risk_results.get("k_anonymity", {}).get("k", "N/A"),
             "l_diversity": risk_results.get("l_diversity", {}).get("l", "N/A"),
         },
+        "dp_statistics": dp_stats,
         "risk_assessment": risk_results,
         "compliance": compliance,
+        "data_summary": {"row_count": len(df), "column_count": len(df.columns)},
+        "pii_summary": pii_summary,
     }
+    
+    # Store in session for report generation
+    session_data[session_id]["analysis_results"] = analysis_results
+
+    return analysis_results
 
 
 @app.get("/api/v1/privacy-budget")
@@ -204,23 +240,33 @@ async def get_privacy_budget():
 
 @app.get("/api/v1/generate-report")
 async def generate_report(session_id: str):
-    """Generate HTML privacy report."""
+    """Generate HTML privacy report using stored analysis results."""
     if session_id not in session_data:
         raise HTTPException(404, "Session not found")
 
     data = session_data[session_id]
-    df = data["df"]
-    pii_results = data["pii_results"]
-
-    # Generate report data
-    data_summary = {"row_count": len(df), "column_count": len(df.columns)}
-    pii_summary = {"total_pii": sum(r["count"] for r in pii_results.values()), "by_type": pii_results}
-    privacy_metrics = dp_engine.get_budget_report()
-    privacy_metrics["epsilon"] = dp_engine.epsilon
-    privacy_metrics["delta"] = dp_engine.delta
-
-    risk_results = {"overall": {"risk_level": "Low", "overall_risk": 0.2, "recommendations": []}}
-    compliance = compliance_checker.check_all(risk_results, pii_summary, True)
+    
+    # Check if analysis has been run
+    if "analysis_results" not in data:
+        raise HTTPException(400, "Please run analysis first before generating report")
+    
+    results = data["analysis_results"]
+    
+    # Use stored analysis results
+    data_summary = results.get("data_summary", {"row_count": len(data["df"]), "column_count": len(data["df"].columns)})
+    pii_summary = results.get("pii_summary", {"total_pii": 0, "by_type": {}})
+    
+    privacy_metrics = {
+        "epsilon": results["privacy_metrics"]["epsilon"],
+        "delta": results["privacy_metrics"]["delta"],
+        "used_epsilon": results["privacy_metrics"]["budget_used"],
+        "remaining_epsilon": results["privacy_metrics"]["epsilon"] - results["privacy_metrics"]["budget_used"],
+        "k_anonymity": results["privacy_metrics"].get("k_anonymity", "N/A"),
+        "l_diversity": results["privacy_metrics"].get("l_diversity", "N/A"),
+    }
+    
+    risk_results = results.get("risk_assessment", {"overall": {"risk_level": "Unknown", "overall_risk": 0}})
+    compliance = results.get("compliance", {})
 
     html = report_generator.generate_html_report(data_summary, pii_summary, privacy_metrics, risk_results, compliance)
 

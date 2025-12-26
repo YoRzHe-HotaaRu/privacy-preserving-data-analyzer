@@ -24,28 +24,61 @@ class ComplianceChecker:
         issues = []
         recommendations = []
 
-        # Data minimization
-        if pii_summary.get("total_pii", 0) > 0 and not anonymization_applied:
-            score -= 30
-            issues.append("PII detected but not anonymized")
-            recommendations.append("Apply anonymization to all PII fields")
+        total_pii = pii_summary.get("total_pii", 0)
+        
+        # Data minimization - PII count affects score
+        if total_pii > 0:
+            if not anonymization_applied:
+                score -= 30
+                issues.append("PII detected but not anonymized")
+                recommendations.append("Apply anonymization to all PII fields")
+            else:
+                # Even with anonymization, high PII count is a concern
+                if total_pii > 50:
+                    score -= 10
+                    recommendations.append("Consider reducing collected PII fields")
+                elif total_pii > 100:
+                    score -= 15
+                    recommendations.append("High volume of PII - review data minimization")
 
-        # k-anonymity check
+        # k-anonymity check - check nested structure
         k_anon = privacy_metrics.get("k_anonymity", {})
-        k = k_anon.get("k", 0)
-        if k < 2:
-            score -= 25
-            issues.append("k-anonymity below minimum threshold")
-            recommendations.append("Increase k-anonymity to at least 2")
-        elif k < 5:
-            score -= 10
-            recommendations.append("Consider increasing k to 5+ for better protection")
+        k = k_anon.get("k", 0) if isinstance(k_anon, dict) else 0
+        
+        if k > 0:  # Only penalize if we have k-anonymity data
+            if k < 2:
+                score -= 25
+                issues.append(f"k-anonymity is {k} (below minimum threshold of 2)")
+                recommendations.append("Increase k-anonymity to at least 2")
+            elif k < 5:
+                score -= 10
+                recommendations.append(f"k-anonymity is {k} - consider increasing to 5+ for better protection")
+        else:
+            # No k-anonymity calculated
+            if total_pii > 0:
+                score -= 5
+                recommendations.append("Configure quasi-identifiers to measure k-anonymity")
 
         # Re-identification risk
         reid = privacy_metrics.get("re_identification", {})
-        if reid.get("overall_risk", 0) > 0.5:
+        overall_risk = reid.get("overall_risk", 0) if isinstance(reid, dict) else 0
+        
+        # Also check overall risk level
+        overall = privacy_metrics.get("overall", {})
+        if isinstance(overall, dict):
+            risk_level = overall.get("risk_level", "").lower()
+            if risk_level == "very high":
+                score -= 25
+                issues.append("Very high re-identification risk")
+            elif risk_level == "high":
+                score -= 15
+                issues.append("High re-identification risk")
+            elif risk_level == "medium":
+                score -= 5
+
+        if overall_risk > 0.5:
             score -= 20
-            issues.append("High re-identification risk")
+            issues.append(f"Re-identification risk is {overall_risk:.0%}")
             recommendations.append("Apply additional anonymization techniques")
 
         # Determine status
@@ -78,26 +111,48 @@ class ComplianceChecker:
 
         # PHI detection (medical-related PII)
         by_type = pii_summary.get("by_type", {})
-        medical_pii = ["MEDICAL_ID", "DATE_OF_BIRTH", "LOCATION", "PHONE_NUMBER", "EMAIL_ADDRESS"]
-
-        for pii_type in medical_pii:
-            if pii_type in by_type and not anonymization_applied:
-                score -= 15
-                issues.append(f"{pii_type} detected (potential PHI)")
+        total_pii = pii_summary.get("total_pii", 0)
+        
+        # Check for PHI-related PII types with dynamic scoring
+        medical_pii_found = 0
+        phi_types = ["US_SSN", "DATE_TIME", "LOCATION", "PHONE_NUMBER", "EMAIL_ADDRESS", "PERSON"]
+        
+        for pii_type, pii_info in by_type.items():
+            if pii_type in phi_types or any(t in pii_type.upper() for t in ["MEDICAL", "HEALTH", "SSN", "DATE"]):
+                count = pii_info.get("count", 0) if isinstance(pii_info, dict) else 0
+                medical_pii_found += count
+                if not anonymization_applied:
+                    score -= min(10, count)  # Cap penalty per type
+                    issues.append(f"{pii_type} detected ({count} instances)")
 
         # Safe Harbor method requires removal of 18 identifiers
-        if len(by_type) > 5 and not anonymization_applied:
-            score -= 20
-            issues.append("Multiple identifier types detected")
-            recommendations.append("Apply Safe Harbor de-identification method")
+        pii_type_count = len(by_type)
+        if pii_type_count > 5:
+            score -= min(15, pii_type_count * 2)
+            recommendations.append(f"Multiple identifier types ({pii_type_count}) - consider Safe Harbor de-identification")
 
-        # k-anonymity for HIPAA should be higher
+        # k-anonymity for HIPAA should be higher (5+)
         k_anon = privacy_metrics.get("k_anonymity", {})
-        k = k_anon.get("k", 0)
-        if k < 5:
-            score -= 20
-            issues.append("k-anonymity below HIPAA recommended threshold")
-            recommendations.append("Increase k-anonymity to at least 5 for HIPAA")
+        k = k_anon.get("k", 0) if isinstance(k_anon, dict) else 0
+        
+        if k > 0:
+            if k < 3:
+                score -= 25
+                issues.append(f"k-anonymity is {k} (HIPAA requires higher protection)")
+            elif k < 5:
+                score -= 10
+                recommendations.append(f"k-anonymity is {k} - increase to 5+ for HIPAA")
+        elif total_pii > 0:
+            score -= 5
+            recommendations.append("Configure quasi-identifiers for k-anonymity measurement")
+
+        # Check overall risk level
+        overall = privacy_metrics.get("overall", {})
+        if isinstance(overall, dict):
+            risk_level = overall.get("risk_level", "").lower()
+            if risk_level in ["very high", "high"]:
+                score -= 15
+                issues.append(f"{risk_level.title()} re-identification risk")
 
         if score >= 80:
             status = "Compliant"
@@ -124,19 +179,47 @@ class ComplianceChecker:
         issues = []
         recommendations = []
 
-        # Personal information detection
-        if pii_summary.get("total_pii", 0) > 0:
+        total_pii = pii_summary.get("total_pii", 0)
+        by_type = pii_summary.get("by_type", {})
+
+        # Personal information detection - dynamic scoring
+        if total_pii > 0:
             if not anonymization_applied:
                 score -= 25
-                issues.append("Personal information not de-identified")
+                issues.append(f"Personal information ({total_pii} instances) not de-identified")
                 recommendations.append("De-identify personal information")
+            else:
+                # Even anonymized, check if high volume
+                if total_pii > 100:
+                    score -= 5
+                    recommendations.append("High volume of personal data - ensure data minimization")
+
+        # Check for high-risk PII types
+        high_risk_types = ["US_SSN", "CREDIT_CARD", "FINANCIAL"]
+        for pii_type in by_type.keys():
+            if any(hr in pii_type.upper() for hr in high_risk_types):
+                score -= 5
+                issues.append(f"High-risk personal data detected: {pii_type}")
+
+        # Check k-anonymity
+        k_anon = privacy_metrics.get("k_anonymity", {})
+        k = k_anon.get("k", 0) if isinstance(k_anon, dict) else 0
+        
+        if k > 0 and k < 3:
+            score -= 15
+            issues.append(f"k-anonymity of {k} increases re-identification risk")
 
         # Re-identification risk
-        reid = privacy_metrics.get("re_identification", {})
-        if reid.get("overall_risk", 0) > 0.3:
-            score -= 20
-            issues.append("Re-identification risk above threshold")
-            recommendations.append("Ensure data cannot be re-identified")
+        overall = privacy_metrics.get("overall", {})
+        if isinstance(overall, dict):
+            overall_risk = overall.get("overall_risk", 0)
+            if overall_risk > 0.5:
+                score -= 20
+                issues.append(f"Re-identification risk above threshold ({overall_risk:.0%})")
+                recommendations.append("Ensure data cannot be re-identified")
+            elif overall_risk > 0.3:
+                score -= 10
+                recommendations.append("Consider additional de-identification measures")
 
         if score >= 80:
             status = "Compliant"

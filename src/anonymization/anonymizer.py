@@ -73,11 +73,14 @@ class DataAnonymizer:
         if strategy is None:
             strategy = self.get_strategy(entity_type)
 
-        if strategy == "suppression":
+        # Normalize strategy names
+        strategy = strategy.lower().strip()
+        
+        if strategy in ("suppression", "suppress"):
             return suppress(value, entity_type)
         elif strategy == "mask":
             return mask(value, entity_type)
-        elif strategy == "generalize":
+        elif strategy in ("generalize", "generalization"):
             return generalize(value, entity_type)
         elif strategy == "perturb":
             return perturb(value)

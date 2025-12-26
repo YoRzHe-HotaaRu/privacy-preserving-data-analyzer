@@ -337,7 +337,7 @@ function displayResults(results) {
 
     // Budget
     const budgetUsed = (privacy_metrics.budget_used / privacy_metrics.epsilon * 100) || 0;
-    document.getElementById('budgetFill').style.width = budgetUsed + '%';
+    document.getElementById('budgetFill').style.width = Math.min(budgetUsed, 100) + '%';
     document.getElementById('budgetPercent').textContent = budgetUsed.toFixed(1) + '%';
     document.getElementById('budgetText').textContent =
         `${privacy_metrics.budget_used.toFixed(3)} / ${privacy_metrics.epsilon} epsilon consumed`;
@@ -345,13 +345,33 @@ function displayResults(results) {
     // Risk Assessment
     const risk = results.risk_assessment?.overall || {};
     const riskLevel = risk.risk_level || 'Unknown';
-    const riskClass = riskLevel.toLowerCase();
+    const riskClass = riskLevel.toLowerCase().replace(' ', '-');
     document.getElementById('riskDisplay').innerHTML = `
         <div class="risk-card">
             <div class="risk-level ${riskClass}">${riskLevel.toUpperCase()}</div>
             <div class="metric-label">Re-identification Risk</div>
         </div>
     `;
+
+    // DP Statistics (if any)
+    if (results.dp_statistics && Object.keys(results.dp_statistics).length > 0) {
+        const dpStatsHtml = Object.entries(results.dp_statistics).map(([col, stats]) => `
+            <div class="stat-card">
+                <div class="stat-value">${stats.private_mean}</div>
+                <div class="stat-label">${escapeHtml(col)} (DP Mean)</div>
+            </div>
+        `).join('');
+
+        // Insert DP stats after risk display
+        const riskDisplay = document.getElementById('riskDisplay');
+        const dpSection = document.createElement('div');
+        dpSection.className = 'dp-stats-section';
+        dpSection.innerHTML = `
+            <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em;">DIFFERENTIALLY PRIVATE STATISTICS</h4>
+            <div class="stats-grid">${dpStatsHtml}</div>
+        `;
+        riskDisplay.parentNode.insertBefore(dpSection, riskDisplay.nextSibling);
+    }
 
     // Compliance
     const complianceGrid = document.getElementById('complianceGrid');

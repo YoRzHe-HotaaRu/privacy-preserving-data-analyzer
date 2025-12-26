@@ -1,0 +1,26 @@
+patient_id,full_name,email,ssn,date_of_birth,phone,address,diagnosis,treatment_cost,insurance_id,gender,blood_type
+P001,Alice Morgan,alice.morgan@hospital.org,123-45-6789,1985-03-15,+1-555-111-2222,"123 Oak Street, Boston, MA 02101",Hypertension,2500.00,INS-8827364,Female,A+
+P002,Brian Chen,b.chen@gmail.com,234-56-7890,1992-07-22,+1-555-222-3333,"456 Maple Ave, Cambridge, MA 02139",Diabetes Type 2,4200.00,INS-7736251,Male,B+
+P003,Catherine Davis,c.davis@outlook.com,345-67-8901,1978-11-08,+1-555-333-4444,"789 Pine Road, Somerville, MA 02143",Asthma,1800.00,INS-9982745,Female,O-
+P004,David Wilson,david.w@yahoo.com,456-78-9012,1965-02-28,+1-555-444-5555,"321 Elm Street, Brookline, MA 02445",Arthritis,3100.00,INS-6654832,Male,AB+
+P005,Emma Johnson,emma.j@company.net,567-89-0123,1988-09-12,+1-555-555-6666,"654 Cedar Lane, Newton, MA 02458",Migraine,950.00,INS-4421098,Female,A-
+P006,Frank Martinez,f.martinez@email.com,678-90-1234,1975-05-30,+1-555-666-7777,"987 Birch Court, Quincy, MA 02169",Heart Disease,8750.00,INS-3356789,Male,B-
+P007,Grace Lee,grace.lee@hospital.org,789-01-2345,1990-12-03,+1-555-777-8888,"147 Walnut Drive, Medford, MA 02155",Anxiety,1200.00,INS-2243567,Female,O+
+P008,Henry Brown,h.brown@gmail.com,890-12-3456,1982-08-17,+1-555-888-9999,"258 Spruce Way, Arlington, MA 02474",Depression,1500.00,INS-1198234,Male,A+
+P009,Isabella Garcia,i.garcia@outlook.com,901-23-4567,1995-04-25,+1-555-999-0000,"369 Ash Boulevard, Waltham, MA 02451",Allergies,650.00,INS-8876543,Female,AB-
+P010,James Taylor,james.t@yahoo.com,012-34-5678,1970-01-10,+1-555-000-1111,"471 Hickory Street, Malden, MA 02148",Back Pain,2200.00,INS-7765432,Male,B+
+P011,Karen White,k.white@company.net,111-22-3333,1987-06-19,+1-555-111-3333,"582 Redwood Ave, Everett, MA 02149",Thyroid Disorder,3400.00,INS-6654321,Female,O+
+P012,Lawrence Hall,l.hall@email.com,222-33-4444,1973-10-05,+1-555-222-4444,"693 Cypress Lane, Revere, MA 02151",Kidney Disease,12500.00,INS-5543210,Male,A-
+P013,Michelle Adams,m.adams@hospital.org,333-44-5555,1998-02-14,+1-555-333-5555,"804 Willow Road, Chelsea, MA 02150",Eczema,780.00,INS-4432109,Female,B-
+P014,Nathan Clark,n.clark@gmail.com,444-55-6666,1968-07-28,+1-555-444-6666,"915 Magnolia Court, Lynn, MA 01901",COPD,5600.00,INS-3321098,Male,AB+
+P015,Olivia Wright,o.wright@outlook.com,555-66-7777,1993-11-11,+1-555-555-7777,"126 Sequoia Drive, Salem, MA 01970",Fibromyalgia,2900.00,INS-2210987,Female,O-
+P016,Patrick King,p.king@yahoo.com,666-77-8888,1980-03-22,+1-555-666-8888,"237 Juniper Way, Peabody, MA 01960",Sleep Apnea,1850.00,INS-1109876,Male,A+
+P017,Quinn Scott,q.scott@company.net,777-88-9999,1991-08-07,+1-555-777-9999,"348 Sycamore Street, Beverly, MA 01915",Osteoporosis,2100.00,INS-9098765,Female,B+
+P018,Robert Young,r.young@email.com,888-99-0000,1976-12-31,+1-555-888-0000,"459 Chestnut Ave, Gloucester, MA 01930",Gout,1100.00,INS-8987654,Male,O+
+P019,Sophia Lopez,s.lopez@hospital.org,999-00-1111,1984-05-16,+1-555-999-1111,"560 Poplar Lane, Danvers, MA 01923",Chronic Fatigue,920.00,INS-7876543,Female,AB-
+P020,Thomas Harris,t.harris@gmail.com,000-11-2222,1969-09-09,+1-555-000-2222,"671 Hawthorn Road, Marblehead, MA 01945",Parkinson's,9800.00,INS-6765432,Male,A-
+P021,Uma Patel,u.patel@outlook.com,112-23-3344,1997-01-28,+1-555-112-3344,"782 Beech Court, Swampscott, MA 01907",IBS,1350.00,INS-5654321,Female,B-
+P022,Victor Nguyen,v.nguyen@yahoo.com,223-34-4455,1972-06-14,+1-555-223-4455,"893 Linden Drive, Nahant, MA 01908",Epilepsy,4500.00,INS-4543210,Male,O-
+P023,Wendy Robinson,w.robinson@company.net,334-45-5566,1989-10-23,+1-555-334-5566,"904 Alder Street, Saugus, MA 01906",Lupus,6200.00,INS-3432109,Female,A+
+P024,Xavier Thompson,x.thompson@email.com,445-56-6677,1966-04-02,+1-555-445-6677,"115 Basswood Ave, Wakefield, MA 01880",Glaucoma,2800.00,INS-2321098,Male,AB+
+P025,Yolanda Sanchez,y.sanchez@hospital.org,556-67-7788,1994-08-18,+1-555-556-7788,"226 Cottonwood Lane, Reading, MA 01867",Psoriasis,1650.00,INS-1210987,Female,B+

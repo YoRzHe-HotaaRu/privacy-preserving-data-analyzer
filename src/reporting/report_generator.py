@@ -18,123 +18,201 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Analysis Report</title>
+    <title>PRIV.GUARD - Privacy Analysis Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0a0a0f;
-            --card-bg: rgba(20, 20, 30, 0.9);
-            --accent: #6366f1;
-            --accent-light: #818cf8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #e2e8f0;
-            --text-muted: #94a3b8;
+            --bg-void: #030308;
+            --bg-deep: #0a0a12;
+            --bg-surface: #0f0f1a;
+            --bg-elevated: #16162a;
+            --bg-card: rgba(15, 15, 30, 0.85);
+            --accent-primary: #00f0ff;
+            --accent-secondary: #00b8d4;
+            --accent-glow: rgba(0, 240, 255, 0.4);
+            --accent-dim: rgba(0, 240, 255, 0.15);
+            --success: #00ff9d;
+            --success-dim: rgba(0, 255, 157, 0.15);
+            --warning: #ffb800;
+            --warning-dim: rgba(255, 184, 0, 0.15);
+            --danger: #ff3366;
+            --danger-dim: rgba(255, 51, 102, 0.15);
+            --text-bright: #ffffff;
+            --text-primary: #e0e6ed;
+            --text-secondary: #8892a0;
+            --text-muted: #4a5568;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-accent: rgba(0, 240, 255, 0.3);
+            --font-display: 'Orbitron', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-body: 'Syne', sans-serif;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: var(--font-body);
+            background: var(--bg-void);
+            color: var(--text-primary);
             line-height: 1.6;
             padding: 2rem;
+            min-height: 100vh;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1100px; margin: 0 auto; }
         .header {
             text-align: center;
             padding: 3rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid var(--border-subtle);
             margin-bottom: 2rem;
         }
         .header h1 {
+            font-family: var(--font-display);
             font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: var(--accent-primary);
+            text-shadow: 0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(0, 240, 255, 0.3);
             margin-bottom: 0.5rem;
         }
-        .header p { color: var(--text-muted); }
+        .header p { 
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted); 
+            letter-spacing: 0.05em;
+        }
         .card {
-            background: var(--card-bg);
+            background: var(--bg-card);
             border-radius: 16px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--border-subtle);
             backdrop-filter: blur(10px);
         }
         .card h2 {
-            font-size: 1.25rem;
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
             margin-bottom: 1rem;
-            color: var(--accent-light);
+            color: var(--accent-primary);
         }
         .metrics {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1rem;
         }
         .metric {
-            background: rgba(99, 102, 241, 0.1);
-            padding: 1rem;
+            background: var(--bg-elevated);
+            padding: 1.25rem;
             border-radius: 12px;
             text-align: center;
+            border: 1px solid var(--border-subtle);
         }
         .metric-value {
+            font-family: var(--font-display);
             font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
+            font-weight: 700;
+            color: var(--accent-primary);
+            text-shadow: 0 0 20px var(--accent-glow);
         }
-        .metric-label { color: var(--text-muted); font-size: 0.875rem; }
+        .metric-label { 
+            font-family: var(--font-mono);
+            color: var(--text-muted); 
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
         .status-badge {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        .status-success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-        .status-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-        .status-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        .list { list-style: none; }
-        .list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .list li:last-child { border: none; }
-        .risk-bar {
-            height: 8px;
-            background: rgba(255,255,255,0.1);
+            padding: 0.35rem 1rem;
             border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+        .status-success { background: var(--success-dim); color: var(--success); }
+        .status-warning { background: var(--warning-dim); color: var(--warning); }
+        .status-danger { background: var(--danger-dim); color: var(--danger); }
+        .risk-bar {
+            height: 12px;
+            background: var(--bg-deep);
+            border-radius: 6px;
             overflow: hidden;
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
         }
         .risk-fill {
             height: 100%;
-            border-radius: 4px;
+            border-radius: 6px;
             transition: width 0.5s ease;
         }
-        .certificate {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1));
-            border: 2px solid var(--accent);
-            padding: 2rem;
-            text-align: center;
+        .recommendations {
+            list-style: none;
+            margin-top: 1rem;
         }
-        .certificate h2 { color: var(--accent); margin-bottom: 1rem; }
+        .recommendations li {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-primary);
+        }
+        .certificate {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(0, 184, 212, 0.05));
+            border: 2px solid var(--accent-primary);
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
+        }
+        .certificate h2 { 
+            color: var(--accent-primary);
+            text-shadow: 0 0 20px var(--accent-glow);
+            margin-bottom: 1rem; 
+        }
+        .certificate p {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        th { color: var(--text-muted); font-weight: 500; }
-        .footer { text-align: center; padding: 2rem 0; color: var(--text-muted); }
+        th, td { 
+            padding: 1rem; 
+            text-align: left; 
+            border-bottom: 1px solid var(--border-subtle);
+            font-family: var(--font-mono);
+        }
+        th { 
+            color: var(--text-muted); 
+            font-weight: 500;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        td { font-size: 0.9rem; }
+        .footer { 
+            text-align: center; 
+            padding: 2rem 0; 
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1>🔒 Privacy Analysis Report</h1>
+            <h1>◈ PRIV.GUARD REPORT</h1>
             <p>Generated on {{ generated_at }}</p>
             <p>Report ID: {{ report_id }}</p>
         </header>
 
         <section class="card">
-            <h2>📊 Dataset Overview</h2>
+            <h2>◈ DATASET OVERVIEW</h2>
             <div class="metrics">
                 <div class="metric">
                     <div class="metric-value">{{ data_summary.rows }}</div>
@@ -156,7 +234,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </section>
 
         <section class="card">
-            <h2>🛡️ Privacy Metrics</h2>
+            <h2>◈ PRIVACY METRICS</h2>
             <div class="metrics">
                 <div class="metric">
                     <div class="metric-value">{{ privacy_metrics.epsilon }}</div>
@@ -178,20 +256,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </section>
 
         <section class="card">
-            <h2>⚠️ Risk Assessment</h2>
-            <p>Overall Risk Level: <span class="status-badge {{ risk_class }}">{{ risk_level }}</span></p>
+            <h2>⚠ RISK ASSESSMENT</h2>
+            <p style="font-family: var(--font-mono);">Overall Risk Level: <span class="status-badge {{ risk_class }}">{{ risk_level }}</span></p>
             <div class="risk-bar">
-                <div class="risk-fill" style="width: {{ risk_percentage }}%; background: {{ risk_color }};"></div>
+                <div class="risk-fill" style="width: {{ risk_percentage }}%; background: linear-gradient(90deg, {{ risk_color }}, {{ risk_color }}99);"></div>
             </div>
-            <ul class="list" style="margin-top: 1rem;">
+            {% if recommendations %}
+            <ul class="recommendations">
                 {% for rec in recommendations %}
                 <li>{{ rec }}</li>
                 {% endfor %}
             </ul>
+            {% endif %}
         </section>
 
         <section class="card">
-            <h2>✅ Compliance Status</h2>
+            <h2>✓ COMPLIANCE STATUS</h2>
             <table>
                 <tr><th>Regulation</th><th>Score</th><th>Status</th></tr>
                 {% for compliance in compliance_results %}
@@ -206,22 +286,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
         {% if insights %}
         <section class="card">
-            <h2>💡 Analysis Insights</h2>
-            <div style="white-space: pre-wrap;">{{ insights }}</div>
+            <h2>◈ ANALYSIS INSIGHTS</h2>
+            <div style="font-family: var(--font-mono); font-size: 0.9rem; white-space: pre-wrap;">{{ insights }}</div>
         </section>
         {% endif %}
 
         <section class="card certificate">
-            <h2>🏆 Privacy Certificate</h2>
+            <h2>◈ PRIVACY CERTIFICATE</h2>
             <p><strong>Certificate ID:</strong> {{ certificate_id }}</p>
-            <p>This analysis satisfies ({{ privacy_metrics.epsilon }}, {{ privacy_metrics.delta }})-differential privacy.</p>
-            <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-muted);">
+            <p style="margin-top: 0.5rem;">This analysis satisfies ({{ privacy_metrics.epsilon }}, {{ privacy_metrics.delta }})-differential privacy.</p>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
                 Valid until: {{ certificate_valid_until }}
             </p>
         </section>
 
         <footer class="footer">
-            <p>Generated by Privacy-Preserving Data Analyzer v1.0</p>
+            <p>PRIV.GUARD // Privacy-Preserving Data Analyzer v1.0</p>
         </footer>
     </div>
 </body>
@@ -304,7 +384,7 @@ class ReportGenerator:
                 "delta": privacy_metrics.get("delta", 1e-5),
                 "k_anonymity": privacy_metrics.get("k_anonymity", "-"),
                 "l_diversity": privacy_metrics.get("l_diversity", "-"),
-                "budget_used": round(privacy_metrics.get("budget_utilization", 0) * 100, 1),
+                "budget_used": round((privacy_metrics.get("used_epsilon", 0) / privacy_metrics.get("epsilon", 1.0)) * 100, 1) if privacy_metrics.get("epsilon", 0) > 0 else 0,
             },
             "risk_level": risk_level,
             "risk_class": risk_class,
